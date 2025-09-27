@@ -1,0 +1,14 @@
+/Users/sell/Desktop/Optimization_C#/bin/Debug/net9.0/Optimization_C#
+/Users/sell/Desktop/Optimization_C#/bin/Debug/net9.0/Optimization_C#.deps.json
+/Users/sell/Desktop/Optimization_C#/bin/Debug/net9.0/Optimization_C#.runtimeconfig.json
+/Users/sell/Desktop/Optimization_C#/bin/Debug/net9.0/Optimization_C#.dll
+/Users/sell/Desktop/Optimization_C#/bin/Debug/net9.0/Optimization_C#.pdb
+/Users/sell/Desktop/Optimization_C#/obj/Debug/net9.0/Optimization_C#.GeneratedMSBuildEditorConfig.editorconfig
+/Users/sell/Desktop/Optimization_C#/obj/Debug/net9.0/Optimization_C#.AssemblyInfoInputs.cache
+/Users/sell/Desktop/Optimization_C#/obj/Debug/net9.0/Optimization_C#.AssemblyInfo.cs
+/Users/sell/Desktop/Optimization_C#/obj/Debug/net9.0/Optimization_C#.csproj.CoreCompileInputs.cache
+/Users/sell/Desktop/Optimization_C#/obj/Debug/net9.0/Optimization_C#.dll
+/Users/sell/Desktop/Optimization_C#/obj/Debug/net9.0/refint/Optimization_C#.dll
+/Users/sell/Desktop/Optimization_C#/obj/Debug/net9.0/Optimization_C#.pdb
+/Users/sell/Desktop/Optimization_C#/obj/Debug/net9.0/Optimization_C#.genruntimeconfig.cache
+/Users/sell/Desktop/Optimization_C#/obj/Debug/net9.0/ref/Optimization_C#.dll
