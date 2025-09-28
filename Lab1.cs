@@ -19,6 +19,7 @@ public static class OneDimensional
         public double RightBound;
         public double Epsilon;
         public long MaxIteration;
+        public int iteration;
 
         public double x_c => (LeftBound + RightBound) * 0.5;
 
@@ -69,7 +70,7 @@ public static class OneDimensional
         public double fib_1;
         public double fib_2;
         public int iteration;
-
+        public double x_c => (LeftBound + RightBound) * 0.5;
         public double condition => (RightBound - LeftBound) / Epsilon;
 
         public FibonacciParam(double lhs, double rhs, double eps, long max_it)
@@ -87,11 +88,11 @@ public static class OneDimensional
 
     public struct SearchResult
     {
-        public MethodType Method { get; set; }
-        public long FunctionCalls { get; set; }
-        public long Iteration { get; set; }
-        public double Accuracy { get; set; }
-        public double Result { get; set; }
+        public MethodType Method;
+        public long FunctionCalls;
+        public long Iteration;
+        public double Accuracy;
+        public double Result;
         public SearchResult(MethodType m, long iter, double acc, double ResultParam)
         {
             Method = m;
@@ -128,35 +129,33 @@ public static class OneDimensional
 
     public static void FindRootByBisection(ref SearchResult ResultParam, Function1D func, ref BisactionParam bisectParam)
     {
-        for (long i = 0; Math.Abs(bisectParam.RightBound - bisectParam.LeftBound) > 2 * bisectParam.Epsilon && i < bisectParam.MaxIteration; i++)
+        for (; (bisectParam.RightBound - bisectParam.LeftBound) > 2 * bisectParam.Epsilon && bisectParam.iteration < bisectParam.MaxIteration; bisectParam.iteration++)
         {
-            ResultParam.FunctionCalls += 2;
             UpdateSearchBounds(func, ref bisectParam);
+            ResultParam.FunctionCalls += 2;
         }
     }
 
     public static void UpdateSearchBounds(Function1D func, ref BisactionParam bisectParam)
     {
-        double mid = bisectParam.x_c;
-        double f_left = func(mid + bisectParam.Epsilon);
-        double f_right = func(mid - bisectParam.Epsilon);
 
-        if (f_left < f_right)
-            bisectParam.RightBound = mid;
+        if (func(bisectParam.x_c + bisectParam.Epsilon) > func(bisectParam.x_c - bisectParam.Epsilon))
+            bisectParam.RightBound = bisectParam.x_c;
         else
-            bisectParam.LeftBound = mid;
+            bisectParam.LeftBound = bisectParam.x_c;
     }
 
     public static void NoteBisectSearchResult(ref SearchResult ResultParam, BisactionParam bisectParam)
     {
         ResultParam.Method = MethodType.bisect;
-        ResultParam.Iteration = bisectParam.MaxIteration;
+        ResultParam.Iteration = bisectParam.iteration;
         ResultParam.Accuracy = Math.Abs(bisectParam.LeftBound - bisectParam.RightBound) * 0.5;
         ResultParam.Result = (bisectParam.LeftBound + bisectParam.RightBound) * 0.5;
     }
 
     public static void GoldenRatioSearchResult(ref SearchResult ResultParam, Function1D func, ref GoldenRatioParam goldenParam)
     {
+        ResultParam.FunctionCalls = 2;
         CheckLeftAndRightBound(ref goldenParam);
 
         FindRootByGoldenRatio(ref ResultParam, func, ref goldenParam);
@@ -174,12 +173,10 @@ public static class OneDimensional
 
     public static void FindRootByGoldenRatio(ref SearchResult ResultParam, Function1D func, ref GoldenRatioParam goldenParam)
     {
-
-        for (; goldenParam.iteration < goldenParam.MaxIteration && (goldenParam.RightBound - goldenParam.LeftBound) > goldenParam.Epsilon; goldenParam.iteration++)
+        for (; goldenParam.iteration < goldenParam.MaxIteration && (goldenParam.RightBound - goldenParam.LeftBound) > 2 * goldenParam.Epsilon; goldenParam.iteration++)
         {
             CheckLeftAndRightGoldenFunc(ref ResultParam, func, ref goldenParam);
         }
-        ResultParam.Iteration = goldenParam.iteration;
     }
     public static void CheckLeftAndRightGoldenFunc(ref SearchResult ResultParam, Function1D func, ref GoldenRatioParam goldenParam)
     {
@@ -209,6 +206,7 @@ public static class OneDimensional
     public static void NoteGoldenRatioSearchResult(ref SearchResult ResultParam, GoldenRatioParam goldenParam)
     {
         ResultParam.Method = MethodType.golden_ratio;
+        ResultParam.Iteration = goldenParam.iteration;
         ResultParam.Accuracy = Math.Abs(goldenParam.LeftBound - goldenParam.RightBound) * 0.5;
         ResultParam.Result = (goldenParam.LeftBound + goldenParam.RightBound) * 0.5;
     }
@@ -216,6 +214,7 @@ public static class OneDimensional
 
     public static void FibonacciSearchResult(ref SearchResult ResultParam, Function1D func, ref FibonacciParam fibonacciParam)
     {
+        ResultParam.FunctionCalls = 2;
         CheckLeftAndRightBound(ref fibonacciParam);
 
         while (fibonacciParam.fib_2 < fibonacciParam.condition)
@@ -243,6 +242,7 @@ public static class OneDimensional
                 x_l = x_r;
                 x_r = fibonacciParam.LeftBound + (fibonacciParam.RightBound - fibonacciParam.LeftBound) * (fibonacciParam.fib_1 / fibonacciParam.fib_2);
                 f_r = func(x_r);
+                ResultParam.FunctionCalls++;
             }
             else
             {
@@ -251,9 +251,9 @@ public static class OneDimensional
                 f_r = f_l;
                 x_l = fibonacciParam.LeftBound + (fibonacciParam.RightBound - fibonacciParam.LeftBound) * ((fibonacciParam.fib_2 - fibonacciParam.fib_1) / fibonacciParam.fib_2);
                 f_l = func(x_l);
+                ResultParam.FunctionCalls++;
             }
         }
-        ResultParam.Iteration = fibonacciParam.iteration;
         NoteFibonacciSearchResult(ref ResultParam, fibonacciParam);
 
     }
@@ -266,7 +266,8 @@ public static class OneDimensional
     }
     public static void NoteFibonacciSearchResult(ref SearchResult ResultParam, FibonacciParam fibonacciParam)
     {
-        ResultParam.Method = MethodType.golden_ratio;
+        ResultParam.Method = MethodType.fibonacci;
+        ResultParam.Iteration = fibonacciParam.iteration;
         ResultParam.Accuracy = Math.Abs(fibonacciParam.LeftBound - fibonacciParam.RightBound) * 0.5;
         ResultParam.Result = (fibonacciParam.LeftBound + fibonacciParam.RightBound) * 0.5;
     }

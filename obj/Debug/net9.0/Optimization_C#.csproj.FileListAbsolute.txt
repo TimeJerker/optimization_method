@@ -12,3 +12,4 @@
 /Users/sell/Desktop/Optimization_C#/obj/Debug/net9.0/Optimization_C#.pdb
 /Users/sell/Desktop/Optimization_C#/obj/Debug/net9.0/Optimization_C#.genruntimeconfig.cache
 /Users/sell/Desktop/Optimization_C#/obj/Debug/net9.0/ref/Optimization_C#.dll
+/Users/sell/Desktop/Optimization_C#/obj/Debug/net9.0/Optimization_C#.sourcelink.json
