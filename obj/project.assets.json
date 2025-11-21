@@ -8,19 +8,19 @@
     "net9.0": []
   },
   "packageFolders": {
-    "/Users/sell/.nuget/packages/": {}
+    "/Users/krovich/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/sell/Desktop/Optimization_C#/Optimization_C#.csproj",
+      "projectUniqueName": "/Users/krovich/programming/optimization_method/Optimization_C#.csproj",
       "projectName": "Optimization_C#",
-      "projectPath": "/Users/sell/Desktop/Optimization_C#/Optimization_C#.csproj",
-      "packagesPath": "/Users/sell/.nuget/packages/",
-      "outputPath": "/Users/sell/Desktop/Optimization_C#/obj/",
+      "projectPath": "/Users/krovich/programming/optimization_method/Optimization_C#.csproj",
+      "packagesPath": "/Users/krovich/.nuget/packages/",
+      "outputPath": "/Users/krovich/programming/optimization_method/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/sell/.nuget/NuGet/NuGet.Config"
+        "/Users/krovich/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -44,7 +44,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net9.0": {
@@ -65,7 +65,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.200/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
