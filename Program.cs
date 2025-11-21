@@ -8,6 +8,8 @@ namespace OptimizationTest
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("=== Тестирование методов многомерной оптимизации ===\n");
+
             FunctionND my_function = (DoubleVector x) => (x[0] - 5) * x[0] + (x[1] - 3) * x[1];
             DoubleVector left = new DoubleVector(0, 0);
             DoubleVector right = new DoubleVector(5, 3);
@@ -19,12 +21,16 @@ namespace OptimizationTest
             Console.WriteLine($"Точность: {eps}");
             Console.WriteLine($"Максимум итераций: {max_iters}\n");
 
+            // Тестирование метода бисекции
             TestBisection(my_function, left, right, eps, max_iters);
             
+            // Тестирование метода золотого сечения
             TestGoldenRatio(my_function, left, right, eps, max_iters);
             
+            // Тестирование метода Фибоначчи
             TestFibonacci(my_function, left, right, eps, max_iters);
             
+            // Тестирование метода покоординатного спуска
             TestPerCoordDescend(my_function, left, eps, max_iters);
         }
 
@@ -32,51 +38,84 @@ namespace OptimizationTest
         {
             Console.WriteLine("1. Метод бисекции:");
             
-            var bisectParam = new MultiDimensional.BisectionParam(left, right, eps, maxIters);
-            var result = new MultiDimensional.SearchResult(MultiDimensional.MethodType.bisect, 0, eps, left);
-
-            MultiDimensional.BisectSearchResult(ref result, func, ref bisectParam);
-
-            Console.WriteLine(result.GetAllValuesAsString());
-            Console.WriteLine();
+            try
+            {
+                var bisectParam = new MultiDimensional.BisectionParam(left, right, eps, maxIters);
+                var result = new MultiDimensional.SearchResult(MultiDimensional.MethodType.bisect, 0, eps, left);
+                
+                var optimizationResult = MultiDimensional.FindRootByBisection(ref result, func, ref bisectParam);
+                
+                Console.WriteLine(result.GetAllValuesAsString());
+                Console.WriteLine($"Ожидаемый минимум: (2.5, 1.5)");
+                Console.WriteLine($"Разница: {DoubleVector.Distance(optimizationResult, new DoubleVector(2.5, 1.5)):E}\n");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}\n");
+            }
         }
 
         static void TestGoldenRatio(FunctionND func, DoubleVector left, DoubleVector right, double eps, int maxIters)
         {
             Console.WriteLine("2. Метод золотого сечения:");
-
-            var goldenParam = new MultiDimensional.GoldenRatioParam(left, right, eps, maxIters);
-            var result = new MultiDimensional.SearchResult(MultiDimensional.MethodType.golden_ratio, 0, eps, left);
-
-            MultiDimensional.GoldenRatioSearchResult(ref result, func, ref goldenParam);
-
-            Console.WriteLine(result.GetAllValuesAsString());
-            Console.WriteLine();
+            
+            try
+            {
+                var goldenParam = new MultiDimensional.GoldenRatioParam(left, right, eps, maxIters);
+                var result = new MultiDimensional.SearchResult(MultiDimensional.MethodType.golden_ratio, 0, eps, left);
+                
+                var optimizationResult = MultiDimensional.FindRootByGoldenRatio(ref result, func, ref goldenParam);
+                
+                Console.WriteLine(result.GetAllValuesAsString());
+                Console.WriteLine($"Ожидаемый минимум: (2.5, 1.5)");
+                Console.WriteLine($"Разница: {DoubleVector.Distance(optimizationResult, new DoubleVector(2.5, 1.5)):E}\n");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}\n");
+            }
         }
 
         static void TestFibonacci(FunctionND func, DoubleVector left, DoubleVector right, double eps, int maxIters)
         {
             Console.WriteLine("3. Метод Фибоначчи:");
-
-            var fibonacciParam = new MultiDimensional.FibonacciParam(left, right, eps, maxIters);
-            var result = new MultiDimensional.SearchResult(MultiDimensional.MethodType.fibonacci, 0, eps, left);
-            MultiDimensional.FibonacciSearchResult(ref result, func, ref fibonacciParam);
-
-            Console.WriteLine(result.GetAllValuesAsString());
-            Console.WriteLine();
+            
+            try
+            {
+                var fibonacciParam = new MultiDimensional.FibonacciParam(left, right, eps, maxIters);
+                var result = new MultiDimensional.SearchResult(MultiDimensional.MethodType.fibonacci, 0, eps, left);
+                
+                var optimizationResult = MultiDimensional.FindRootByFibonacci(ref result, func, ref fibonacciParam);
+                
+                Console.WriteLine(result.GetAllValuesAsString());
+                Console.WriteLine($"Ожидаемый минимум: (2.5, 1.5)");
+                Console.WriteLine($"Разница: {DoubleVector.Distance(optimizationResult, new DoubleVector(2.5, 1.5)):E}\n");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}\n");
+            }
         }
 
         static void TestPerCoordDescend(FunctionND func, DoubleVector startPoint, double eps, int maxIters)
         {
             Console.WriteLine("4. Метод покоординатного спуска:");
-
-            var coordParam = new MultiDimensional.PerCoordDescendParam(startPoint, eps, maxIters);
-            var result = new MultiDimensional.SearchResult(MultiDimensional.MethodType.per_coord_descend, 0, eps, startPoint);
-
-            MultiDimensional.PerCoordDescendSearchResult(ref result, func, ref coordParam);
-
-            Console.WriteLine(result.GetAllValuesAsString());
-            Console.WriteLine();
+            
+            try
+            {
+                var coordParam = new MultiDimensional.PerCoordDescendParam(startPoint, eps, maxIters);
+                var result = new MultiDimensional.SearchResult(MultiDimensional.MethodType.per_coord_descend, 0, eps, startPoint);
+                
+                MultiDimensional.PerCoordDescendSearchResult(ref result, func, ref coordParam);
+                
+                Console.WriteLine(result.GetAllValuesAsString());
+                Console.WriteLine($"Ожидаемый минимум: (2.5, 1.5)");
+                Console.WriteLine($"Разница: {DoubleVector.Distance(result.Result, new DoubleVector(2.5, 1.5)):E}\n");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}\n");
+            }
         }
     }
 }

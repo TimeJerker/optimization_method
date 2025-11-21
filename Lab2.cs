@@ -34,6 +34,10 @@ namespace OptimizationMethods
                 MaxIteration = max_it;
                 Iteration = 0;
             }
+            public BisectionParam(DoubleVector lhs, DoubleVector rhs, double eps)
+                : this(lhs, rhs, eps, NumericCommon.ITERATIONS_COUNT_HIGH)
+            {
+            }
         }
 
         public struct GoldenRatioParam
@@ -106,6 +110,7 @@ namespace OptimizationMethods
                 OptimizedCoordinatesCount = 0;
             }
         }
+
         public struct SearchResult
         {
             public MethodType Method;
@@ -131,13 +136,7 @@ namespace OptimizationMethods
             }
         };
 
-        public static void BisectSearchResult(ref SearchResult resultParam, FunctionND func, ref BisectionParam bisectParam)
-        {
-            FindRootByBisection(ref resultParam, func, ref bisectParam);
-            NoteBisectSearchResult(ref resultParam, bisectParam);
-        }
-
-        public static void FindRootByBisection(ref SearchResult resultParam, FunctionND func, ref BisectionParam bisectParam)
+        public static DoubleVector FindRootByBisection(ref SearchResult resultParam, FunctionND func, ref BisectionParam bisectParam)
         {
             DoubleVector direction = DoubleVector.Direction(bisectParam.LeftBound, bisectParam.RightBound) * bisectParam.Epsilon;
             
@@ -145,19 +144,17 @@ namespace OptimizationMethods
                    DoubleVector.Distance(bisectParam.RightBound, bisectParam.LeftBound) > 2 * bisectParam.Epsilon; 
                    bisectParam.Iteration++)
             {
-                UpdateSearchBounds(func, ref bisectParam, direction);
+                if (func(bisectParam.x_c + direction) > func(bisectParam.x_c - direction))
+                    bisectParam.RightBound = bisectParam.x_c;
+                else
+                    bisectParam.LeftBound = bisectParam.x_c;
+                
                 resultParam.FunctionCalls += 2;
             }
-        }
 
-        public static void UpdateSearchBounds(FunctionND func, ref BisectionParam bisectParam, DoubleVector direction)
-        {
-            if (func(bisectParam.x_c + direction) > func(bisectParam.x_c - direction))
-                bisectParam.RightBound = bisectParam.x_c;
-            else
-                bisectParam.LeftBound = bisectParam.x_c;
+            NoteBisectSearchResult(ref resultParam, bisectParam);
+            return (bisectParam.LeftBound + bisectParam.RightBound) * 0.5;
         }
-
         public static void NoteBisectSearchResult(ref SearchResult resultParam, BisectionParam bisectParam)
         {
             resultParam.Method = MethodType.bisect;
@@ -166,13 +163,7 @@ namespace OptimizationMethods
             resultParam.Result = (bisectParam.LeftBound + bisectParam.RightBound) * 0.5;
         }
 
-        public static void GoldenRatioSearchResult(ref SearchResult resultParam, FunctionND func, ref GoldenRatioParam goldenParam)
-        {
-            FindRootByGoldenRatio(ref resultParam, func, ref goldenParam);
-            NoteGoldenRatioSearchResult(ref resultParam, goldenParam);
-        }
-
-        public static void FindRootByGoldenRatio(ref SearchResult resultParam, FunctionND func, ref GoldenRatioParam goldenParam)
+        public static DoubleVector FindRootByGoldenRatio(ref SearchResult resultParam, FunctionND func, ref GoldenRatioParam goldenParam)
         {
             double f_l = func(goldenParam.x_l);
             double f_r = func(goldenParam.x_r);
@@ -182,31 +173,27 @@ namespace OptimizationMethods
                    DoubleVector.Distance(goldenParam.RightBound, goldenParam.LeftBound) > 2 * goldenParam.Epsilon; 
                    goldenParam.Iteration++)
             {
-                UpdateSearchBoundsGoldenRatio(func, ref goldenParam, ref f_l, ref f_r);
+                if (f_l > f_r)
+                {
+                    goldenParam.LeftBound = goldenParam.x_l;
+                    goldenParam.x_l = goldenParam.x_r;
+                    f_l = f_r;
+                    goldenParam.x_r = goldenParam.LeftBound + (goldenParam.RightBound - goldenParam.LeftBound) * NumericCommon.PSI;
+                    f_r = func(goldenParam.x_r);
+                }
+                else
+                {
+                    goldenParam.RightBound = goldenParam.x_r;
+                    goldenParam.x_r = goldenParam.x_l;
+                    f_r = f_l;
+                    goldenParam.x_l = goldenParam.RightBound - (goldenParam.RightBound - goldenParam.LeftBound) * NumericCommon.PSI;
+                    f_l = func(goldenParam.x_l);
+                }
                 resultParam.FunctionCalls += 1;
             }
+            NoteGoldenRatioSearchResult(ref resultParam, goldenParam);
+            return (goldenParam.LeftBound + goldenParam.RightBound) * 0.5;
         }
-
-        public static void UpdateSearchBoundsGoldenRatio(FunctionND func, ref GoldenRatioParam goldenParam, ref double f_l, ref double f_r)
-        {
-            if (f_l > f_r)
-            {
-                goldenParam.LeftBound = goldenParam.x_l;
-                goldenParam.x_l = goldenParam.x_r;
-                f_l = f_r;
-                goldenParam.x_r = goldenParam.LeftBound + (goldenParam.RightBound - goldenParam.LeftBound) * NumericCommon.PSI;
-                f_r = func(goldenParam.x_r);
-            }
-            else
-            {
-                goldenParam.RightBound = goldenParam.x_r;
-                goldenParam.x_r = goldenParam.x_l;
-                f_r = f_l;
-                goldenParam.x_l = goldenParam.RightBound - (goldenParam.RightBound - goldenParam.LeftBound) * NumericCommon.PSI;
-                f_l = func(goldenParam.x_l);
-            }
-        }
-
         public static void NoteGoldenRatioSearchResult(ref SearchResult resultParam, GoldenRatioParam goldenParam)
         {
             resultParam.Method = MethodType.golden_ratio;
@@ -215,44 +202,8 @@ namespace OptimizationMethods
             resultParam.Result = (goldenParam.LeftBound + goldenParam.RightBound) * 0.5;
         }
 
-        public static DoubleVector BiSect(FunctionND targetFunction, DoubleVector lhs, DoubleVector rhs, double accuracy, int iterations)
+        public static DoubleVector FindRootByFibonacci(ref SearchResult resultParam, FunctionND func, ref FibonacciParam fibonacciParam)
         {
-            var bisectParam = new BisectionParam(lhs, rhs, accuracy, iterations);
-            var result = new SearchResult(MethodType.bisect, 0, accuracy, lhs);
-            BisectSearchResult(ref result, targetFunction, ref bisectParam);
-            return result.Result;
-        }
-
-        public static DoubleVector BiSect(FunctionND targetFunction, DoubleVector lhs, DoubleVector rhs, double accuracy) => 
-            BiSect(targetFunction, lhs, rhs, accuracy, NumericCommon.ITERATIONS_COUNT_HIGH);
-
-        public static DoubleVector BiSect(FunctionND targetFunction, DoubleVector lhs, DoubleVector rhs) => 
-            BiSect(targetFunction, lhs, rhs, NumericCommon.NUMERIC_ACCURACY_MIDDLE, NumericCommon.ITERATIONS_COUNT_HIGH);
-
-        public static DoubleVector GoldenRatio(FunctionND targetFunction, DoubleVector lhs, DoubleVector rhs, double accuracy, int iterations)
-        {
-            var goldenParam = new GoldenRatioParam(lhs, rhs, accuracy, iterations);
-            var result = new SearchResult(MethodType.golden_ratio, 0, accuracy, lhs);
-            GoldenRatioSearchResult(ref result, targetFunction, ref goldenParam);
-            return result.Result;
-        }
-
-        public static DoubleVector GoldenRatio(FunctionND targetFunction, DoubleVector lhs, DoubleVector rhs, double accuracy) => 
-            GoldenRatio(targetFunction, lhs, rhs, accuracy, NumericCommon.ITERATIONS_COUNT_HIGH);
-
-        public static DoubleVector GoldenRatio(FunctionND targetFunction, DoubleVector lhs, DoubleVector rhs) => 
-            GoldenRatio(targetFunction, lhs, rhs, NumericCommon.NUMERIC_ACCURACY_MIDDLE, NumericCommon.ITERATIONS_COUNT_HIGH);
-
-        
-        public static void FibonacciSearchResult(ref SearchResult resultParam, FunctionND func, ref FibonacciParam fibonacciParam)
-        {
-            FindRootByFibonacci(ref resultParam, func, ref fibonacciParam);
-            NoteFibonacciSearchResult(ref resultParam, fibonacciParam);
-        }
-
-        public static void FindRootByFibonacci(ref SearchResult resultParam, FunctionND func, ref FibonacciParam fibonacciParam)
-        {
-            // Инициализация последовательности Фибоначчи
             while (fibonacciParam.fib_2 < fibonacciParam.condition)
             {
                 fibonacciParam.fib_t = fibonacciParam.fib_1;
@@ -297,67 +248,73 @@ namespace OptimizationMethods
                 resultParam.FunctionCalls += 1;
                 fibonacciParam.Iteration++;
             }
+            NoteFibonacciSearchResult(ref resultParam, fibonacciParam);
+            return (fibonacciParam.LeftBound + fibonacciParam.RightBound) * 0.5;
         }
 
         public static void NoteFibonacciSearchResult(ref SearchResult resultParam, FibonacciParam fibonacciParam)
         {
-            resultParam.Method = MethodType.fibonacci; 
+            resultParam.Method = MethodType.fibonacci;
             resultParam.Iteration = fibonacciParam.Iteration;
             resultParam.Accuracy = DoubleVector.Distance(fibonacciParam.RightBound, fibonacciParam.LeftBound) * 0.5;
             resultParam.Result = (fibonacciParam.LeftBound + fibonacciParam.RightBound) * 0.5;
         }
-
-        public static DoubleVector Fibonacci(FunctionND targetFunction, DoubleVector lhs, DoubleVector rhs) => 
-            Fibonacci(targetFunction, lhs, rhs, NumericCommon.NUMERIC_ACCURACY_MIDDLE);
-            public static void PerCoordDescendSearchResult(ref SearchResult resultParam, FunctionND func, ref PerCoordDescendParam coordParam)
-            {
-                FindMinimumByPerCoordDescend(ref resultParam, func, ref coordParam);
-                NotePerCoordDescendSearchResult(ref resultParam, coordParam);
-            }
+        public static void PerCoordDescendSearchResult(ref SearchResult resultParam, FunctionND func, ref PerCoordDescendParam coordParam)
+        {
+            FindMinimumByPerCoordDescend(ref resultParam, func, ref coordParam);
+            NotePerCoordDescendSearchResult(ref resultParam, coordParam);
+        }
 
         public static void FindMinimumByPerCoordDescend(ref SearchResult resultParam, FunctionND func, ref PerCoordDescendParam coordParam)
         {
             DoubleVector x_curr = new DoubleVector(coordParam.StartPoint);
             DoubleVector x_next = new DoubleVector(coordParam.StartPoint);
             double step = 1.0;
-            double accuracy = double.MaxValue;
+            double accuracy = double.PositiveInfinity;
+            int opt_coord_n = 0;
 
             for (; coordParam.Iteration < coordParam.MaxIteration; coordParam.Iteration++)
             {
                 int coord_id = coordParam.Iteration % x_curr.Count;
                 double original_value = x_curr[coord_id];
 
-                x_next[coord_id] -= coordParam.Epsilon;
-                double f_left = func(x_next);
-                x_next[coord_id] += 2 * coordParam.Epsilon;
-                double f_right = func(x_next);
-                x_next[coord_id] = original_value;
+                x_curr[coord_id] -= coordParam.Epsilon;
+                double f_left = func(x_curr);
+                x_curr[coord_id] += 2 * coordParam.Epsilon;
+                double f_right = func(x_curr);
+                x_curr[coord_id] = original_value;
                 resultParam.FunctionCalls += 2;
 
                 double search_direction = f_left > f_right ? step : -step;
                 x_next[coord_id] = x_curr[coord_id] + search_direction;
 
-                var lineSearchResult = BiSect(func, x_curr, x_next, coordParam.Epsilon);
-                accuracy = Math.Min(accuracy, DoubleVector.Distance(x_curr, lineSearchResult));
+                var fibonacciParam = new FibonacciParam(x_curr, x_next, coordParam.Epsilon, coordParam.MaxIteration);
+                var lineSearchResult = new SearchResult(MethodType.fibonacci, 0, coordParam.Epsilon, x_curr);
                 
+                DoubleVector line_search_result = FindRootByFibonacci(ref lineSearchResult, func, ref fibonacciParam);
+                accuracy = Math.Min(accuracy, lineSearchResult.Accuracy);
+                resultParam.FunctionCalls += lineSearchResult.FunctionCalls;
+
                 DoubleVector x_prev = new DoubleVector(x_curr);
-                x_curr = new DoubleVector(lineSearchResult);
+                x_curr = new DoubleVector(line_search_result);
                 x_next = new DoubleVector(x_curr);
 
-                if (Math.Abs(x_curr[coord_id] - original_value) < coordParam.Epsilon)
+                if (DoubleVector.Distance(x_curr, x_prev) < 2 * coordParam.Epsilon)
                 {
-                    coordParam.OptimizedCoordinatesCount++;
-                    if (coordParam.OptimizedCoordinatesCount == x_curr.Count)
+                    opt_coord_n++;
+                    if (opt_coord_n == x_curr.Count)
                         break;
                 }
                 else
                 {
-                    coordParam.OptimizedCoordinatesCount = 0;
+                    opt_coord_n = 0;
                 }
             }
 
             coordParam.StartPoint = new DoubleVector(x_curr);
+            coordParam.OptimizedCoordinatesCount = opt_coord_n;
             resultParam.Accuracy = accuracy;
+            NotePerCoordDescendSearchResult(ref resultParam, coordParam);
         }
 
         public static void NotePerCoordDescendSearchResult(ref SearchResult resultParam, PerCoordDescendParam coordParam)
