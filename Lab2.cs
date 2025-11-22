@@ -38,6 +38,10 @@ namespace OptimizationMethods
                 : this(lhs, rhs, eps, NumericCommon.ITERATIONS_COUNT_HIGH)
             {
             }
+            public BisectionParam(DoubleVector lhs, DoubleVector rhs)
+                : this(lhs, rhs, NumericCommon.NUMERIC_ACCURACY_MIDDLE, NumericCommon.ITERATIONS_COUNT_HIGH)
+            {
+            }
         }
 
         public struct GoldenRatioParam
@@ -64,6 +68,14 @@ namespace OptimizationMethods
                 x_l = RightBound - (RightBound - LeftBound) * NumericCommon.PSI;
                 x_r = LeftBound + (RightBound - LeftBound) * NumericCommon.PSI;
             }
+            public GoldenRatioParam(DoubleVector lhs, DoubleVector rhs, double eps)
+                : this(lhs, rhs, eps, NumericCommon.ITERATIONS_COUNT_HIGH)
+            {
+            }
+            public GoldenRatioParam(DoubleVector lhs, DoubleVector rhs)
+                : this(lhs, rhs, NumericCommon.NUMERIC_ACCURACY_MIDDLE, NumericCommon.ITERATIONS_COUNT_HIGH)
+            {
+            }
         }
 
         public struct FibonacciParam
@@ -71,7 +83,6 @@ namespace OptimizationMethods
             public DoubleVector LeftBound;
             public DoubleVector RightBound;
             public double Epsilon;
-            public long MaxIteration;
             public double fib_t;
             public double fib_1;
             public double fib_2;
@@ -80,16 +91,19 @@ namespace OptimizationMethods
             public DoubleVector x_c => (LeftBound + RightBound) * 0.5;
             public double condition => DoubleVector.Distance(RightBound, LeftBound) / Epsilon;
 
-            public FibonacciParam(DoubleVector lhs, DoubleVector rhs, double eps, long max_it)
+            public FibonacciParam(DoubleVector lhs, DoubleVector rhs, double eps)
             {
                 LeftBound = new DoubleVector(lhs);
                 RightBound = new DoubleVector(rhs);
                 Epsilon = eps;
-                MaxIteration = max_it;
                 fib_t = 0.0;
                 fib_1 = 1.0;
                 fib_2 = 1.0;
                 Iteration = 0;
+            }
+            public FibonacciParam(DoubleVector lhs, DoubleVector rhs)
+                : this(lhs, rhs, NumericCommon.NUMERIC_ACCURACY_MIDDLE)
+            {
             }
         }
 
@@ -267,8 +281,8 @@ namespace OptimizationMethods
 
         public static void FindMinimumByPerCoordDescend(ref SearchResult resultParam, FunctionND func, ref PerCoordDescendParam coordParam)
         {
-            DoubleVector x_curr = new DoubleVector(coordParam.StartPoint);
-            DoubleVector x_next = new DoubleVector(coordParam.StartPoint);
+            DoubleVector x_curr = new (coordParam.StartPoint);
+            DoubleVector x_next = new (coordParam.StartPoint);
             double step = 1.0;
             double accuracy = double.PositiveInfinity;
             int opt_coord_n = 0;
@@ -288,7 +302,7 @@ namespace OptimizationMethods
                 double search_direction = f_left > f_right ? step : -step;
                 x_next[coord_id] = x_curr[coord_id] + search_direction;
 
-                var fibonacciParam = new FibonacciParam(x_curr, x_next, coordParam.Epsilon, coordParam.MaxIteration);
+                var fibonacciParam = new FibonacciParam(x_curr, x_next, coordParam.Epsilon);
                 var lineSearchResult = new SearchResult(MethodType.fibonacci, 0, coordParam.Epsilon, x_curr);
                 
                 DoubleVector line_search_result = FindRootByFibonacci(ref lineSearchResult, func, ref fibonacciParam);
