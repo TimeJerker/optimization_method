@@ -157,9 +157,31 @@ namespace MathUtils
 
         public static double Distance(DoubleVector left, DoubleVector right)
         {
-            if (left.Count != right.Count) throw new Exception("error :: dirction :: DoubleVectors of different dimensions");
-            return right.Combine(left, (l, r) => r - l).Reduce((accum, itеm) => accum + itеm * itеm);
+            if (left.Count != right.Count) throw new Exception("error :: dirctiion :: DoubleVectors of different dimensions");
+            return Math.Sqrt(right.Combine(left, (l, r) => r - l).Reduce((accum, itеm) => accum + itеm * itеm));
         }
+        // public static double ReduceDouble(this IEnumerable<double> vector, Func<double, double, double> function, double initialValue = 0)
+        // {
+        //     double accumulator = initialValue;
+        //     foreach (var v in vector) 
+        //         accumulator = function(accumulator, v);
+        //     return accumulator;
+        // }
+
+        // public int Size()
+        // {
+        //     return Math.Sqrt(components.ReduceDouble(
+        //         (accum, value) => accum + value * value, 
+        //         0.0
+        //     ));
+        // }
+        
+        // public static double Distance(DoubleVector left, DoubleVector right)
+        // {
+        //     if (left.Count != right.Count) 
+        //         throw new Exception("error :: distance :: DoubleVectors of different dimensions");
+        //     return (right - left).Magnitude;
+        // }
 
         /// <summary>
         /// Градиент скалярной функции векторного аргумента 
@@ -170,8 +192,9 @@ namespace MathUtils
         /// <returns></returns>
         public static DoubleVector Gradient(FunctionND func, DoubleVector x, double eps)
         {
-            DoubleVector df = new DoubleVector(x.Count);
-            for (int i = 0; i < x.Count; i++) df.PushBack(Partial(func, x, i, eps));
+            DoubleVector df = new DoubleVector();
+            for (int i = 0; i < x.Count; i++) 
+                df.PushBack(Partial(func, x, i, eps));
             return df;
         }
         public static DoubleVector Gradient(FunctionND func, DoubleVector x) => Gradient(func, x, NumericCommon.NUMERIC_ACCURACY_MIDDLE);

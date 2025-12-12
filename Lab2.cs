@@ -123,6 +123,90 @@ namespace OptimizationMethods
                 Iteration = 0;
                 OptimizedCoordinatesCount = 0;
             }
+            public PerCoordDescendParam(DoubleVector start, double eps)
+                : this(start, eps, NumericCommon.ITERATIONS_COUNT_HIGH)
+            {
+            }
+            public PerCoordDescendParam(DoubleVector start)
+                : this(start, NumericCommon.NUMERIC_ACCURACY_MIDDLE, NumericCommon.ITERATIONS_COUNT_HIGH)
+            {
+            }
+        }
+        public struct GradientDescendParam
+        {
+            public DoubleVector StartPoint;
+            public double Epsilon;
+            public long MaxIteration;
+            public int Iteration;
+            public int FunctionCount;
+
+            public GradientDescendParam(DoubleVector start, double eps, long max_it)
+            {
+                StartPoint = new DoubleVector(start);
+                Epsilon = eps;
+                MaxIteration = max_it;
+                Iteration = 0;
+                FunctionCount = 0;
+            }
+            public GradientDescendParam(DoubleVector start, double eps)
+                : this(start, eps, NumericCommon.ITERATIONS_COUNT_HIGH)
+            {
+            }
+            public GradientDescendParam(DoubleVector start)
+                : this(start, NumericCommon.NUMERIC_ACCURACY_MIDDLE, NumericCommon.ITERATIONS_COUNT_HIGH)
+            {
+            }
+        }
+        public struct ConjGradientDescendParam
+        {
+            public DoubleVector StartPoint;
+            public double Epsilon;
+            public long MaxIteration;
+            public int Iteration;
+            public int FunctionCount;
+
+            public ConjGradientDescendParam(DoubleVector start, double eps, long max_it)
+            {
+                StartPoint = new DoubleVector(start);
+                Epsilon = eps;
+                MaxIteration = max_it;
+                Iteration = 0;
+                FunctionCount = 0;
+            }
+            public ConjGradientDescendParam(DoubleVector start, double eps)
+                : this(start, eps, NumericCommon.ITERATIONS_COUNT_HIGH)
+            {
+            }
+            public ConjGradientDescendParam(DoubleVector start)
+                : this(start, NumericCommon.NUMERIC_ACCURACY_MIDDLE, NumericCommon.ITERATIONS_COUNT_HIGH)
+            {
+            }
+        }
+
+        public struct NewtoneRaphsonParam
+        {
+            public DoubleVector StartPoint;
+            public double Epsilon;
+            public long MaxIteration;
+            public int Iteration;
+            public int FunctionCount;
+
+            public NewtoneRaphsonParam(DoubleVector start, double eps, long max_it)
+            {
+                StartPoint = new DoubleVector(start);
+                Epsilon = eps;
+                MaxIteration = max_it;
+                Iteration = 0;
+                FunctionCount = 0;
+            }
+            public NewtoneRaphsonParam(DoubleVector start, double eps)
+                : this(start, eps, NumericCommon.ITERATIONS_COUNT_HIGH)
+            {
+            }
+            public NewtoneRaphsonParam(DoubleVector start)
+                : this(start, NumericCommon.NUMERIC_ACCURACY_MIDDLE, NumericCommon.ITERATIONS_COUNT_HIGH)
+            {
+            }
         }
 
         public struct SearchResult
@@ -145,8 +229,8 @@ namespace OptimizationMethods
                 return $"Method: {Method}\n" +
                     $"Function Calls: {FunctionCalls}\n" +
                     $"Iteration: {Iteration}\n" +
-                    $"Accuracy: {Accuracy}\n" +
-                    $"Result: {Result}";
+                    $"Accuracy: {Accuracy:E4}\n" +
+                    $"Result: {Result:G15}";
             }
         };
 
@@ -173,27 +257,29 @@ namespace OptimizationMethods
         {
             resultParam.Method = MethodType.bisect;
             resultParam.Iteration = bisectParam.Iteration;
-            resultParam.Accuracy = DoubleVector.Distance(bisectParam.RightBound, bisectParam.LeftBound) * 0.5;
+            resultParam.Accuracy = DoubleVector.Distance(bisectParam.RightBound, bisectParam.LeftBound);
             resultParam.Result = (bisectParam.LeftBound + bisectParam.RightBound) * 0.5;
         }
 
         public static DoubleVector FindRootByGoldenRatio(ref SearchResult resultParam, FunctionND func, ref GoldenRatioParam goldenParam)
         {
+
             double f_l = func(goldenParam.x_l);
             double f_r = func(goldenParam.x_r);
-            resultParam.FunctionCalls += 2;
+            resultParam.FunctionCalls = 2;
 
             for (; goldenParam.Iteration < goldenParam.MaxIteration && 
-                   DoubleVector.Distance(goldenParam.RightBound, goldenParam.LeftBound) > 2 * goldenParam.Epsilon; 
-                   goldenParam.Iteration++)
+                DoubleVector.Distance(goldenParam.RightBound, goldenParam.LeftBound) > 2 * goldenParam.Epsilon; 
+                goldenParam.Iteration++)
             {
                 if (f_l > f_r)
                 {
                     goldenParam.LeftBound = goldenParam.x_l;
                     goldenParam.x_l = goldenParam.x_r;
-                    f_l = f_r;
+                    f_l = f_r; 
                     goldenParam.x_r = goldenParam.LeftBound + (goldenParam.RightBound - goldenParam.LeftBound) * NumericCommon.PSI;
                     f_r = func(goldenParam.x_r);
+                    resultParam.FunctionCalls++;
                 }
                 else
                 {
@@ -202,9 +288,10 @@ namespace OptimizationMethods
                     f_r = f_l;
                     goldenParam.x_l = goldenParam.RightBound - (goldenParam.RightBound - goldenParam.LeftBound) * NumericCommon.PSI;
                     f_l = func(goldenParam.x_l);
+                    resultParam.FunctionCalls++;
                 }
-                resultParam.FunctionCalls += 1;
             }
+            
             NoteGoldenRatioSearchResult(ref resultParam, goldenParam);
             return (goldenParam.LeftBound + goldenParam.RightBound) * 0.5;
         }
@@ -212,18 +299,22 @@ namespace OptimizationMethods
         {
             resultParam.Method = MethodType.golden_ratio;
             resultParam.Iteration = goldenParam.Iteration;
-            resultParam.Accuracy = DoubleVector.Distance(goldenParam.RightBound, goldenParam.LeftBound) * 0.5;
+            resultParam.Accuracy = DoubleVector.Distance(goldenParam.RightBound, goldenParam.LeftBound);
             resultParam.Result = (goldenParam.LeftBound + goldenParam.RightBound) * 0.5;
         }
 
         public static DoubleVector FindRootByFibonacci(ref SearchResult resultParam, FunctionND func, ref FibonacciParam fibonacciParam)
         {
+
+            fibonacciParam.Iteration = 0;
+
+            int preIterations = 0;
             while (fibonacciParam.fib_2 < fibonacciParam.condition)
             {
                 fibonacciParam.fib_t = fibonacciParam.fib_1;
                 fibonacciParam.fib_1 = fibonacciParam.fib_2;
                 fibonacciParam.fib_2 += fibonacciParam.fib_t;
-                fibonacciParam.Iteration++;
+                preIterations++;
             }
             
             DoubleVector x_l = fibonacciParam.LeftBound + (fibonacciParam.RightBound - fibonacciParam.LeftBound) * 
@@ -233,10 +324,13 @@ namespace OptimizationMethods
 
             double f_l = func(x_l);
             double f_r = func(x_r);
-            resultParam.FunctionCalls += 2;
             
-            for (int i = fibonacciParam.Iteration; i > 0; i--)
+            resultParam.FunctionCalls = 2;
+            
+            for (int i = preIterations; i > 0; i--)
             {
+                fibonacciParam.Iteration++;
+                
                 fibonacciParam.fib_t = fibonacciParam.fib_2 - fibonacciParam.fib_1;
                 fibonacciParam.fib_2 = fibonacciParam.fib_1;
                 fibonacciParam.fib_1 = fibonacciParam.fib_t;
@@ -259,9 +353,10 @@ namespace OptimizationMethods
                         ((fibonacciParam.fib_2 - fibonacciParam.fib_1) / fibonacciParam.fib_2);
                     f_l = func(x_l);
                 }
-                resultParam.FunctionCalls += 1;
-                fibonacciParam.Iteration++;
+
+                resultParam.FunctionCalls++;
             }
+            
             NoteFibonacciSearchResult(ref resultParam, fibonacciParam);
             return (fibonacciParam.LeftBound + fibonacciParam.RightBound) * 0.5;
         }
@@ -270,13 +365,8 @@ namespace OptimizationMethods
         {
             resultParam.Method = MethodType.fibonacci;
             resultParam.Iteration = fibonacciParam.Iteration;
-            resultParam.Accuracy = DoubleVector.Distance(fibonacciParam.RightBound, fibonacciParam.LeftBound) * 0.5;
+            resultParam.Accuracy = DoubleVector.Distance(fibonacciParam.RightBound, fibonacciParam.LeftBound);
             resultParam.Result = (fibonacciParam.LeftBound + fibonacciParam.RightBound) * 0.5;
-        }
-        public static void PerCoordDescendSearchResult(ref SearchResult resultParam, FunctionND func, ref PerCoordDescendParam coordParam)
-        {
-            FindMinimumByPerCoordDescend(ref resultParam, func, ref coordParam);
-            NotePerCoordDescendSearchResult(ref resultParam, coordParam);
         }
 
         public static void FindMinimumByPerCoordDescend(ref SearchResult resultParam, FunctionND func, ref PerCoordDescendParam coordParam)
@@ -338,5 +428,136 @@ namespace OptimizationMethods
             resultParam.Result = new DoubleVector(coordParam.StartPoint);
         }
 
+        public static void FindMinimumByGradientDescend(ref SearchResult resultParam, FunctionND func, ref GradientDescendParam gradientParam)
+        {
+            DoubleVector xStart = gradientParam.StartPoint;
+            double accuracy = gradientParam.Epsilon;
+            long iterations = gradientParam.MaxIteration;
+            
+            DoubleVector x_i = new DoubleVector(xStart);
+
+            DoubleVector x_i_1 = new DoubleVector(xStart);
+
+            int cntr = 0;
+
+            for (; cntr <= iterations; cntr++)
+            {
+                x_i_1 = x_i - DoubleVector.Gradient(func, x_i, accuracy);
+
+                gradientParam.FunctionCount +=  (int)(2.0 * x_i.Magnitude);
+
+                var fibonacciParam = new FibonacciParam(x_i, x_i_1, accuracy);
+
+                x_i_1 = FindRootByFibonacci(ref resultParam, func, ref fibonacciParam);
+
+                gradientParam.FunctionCount += (int)resultParam.FunctionCalls;
+                if ((x_i_1 - x_i).Magnitude < accuracy) break;
+
+                x_i = x_i_1;
+            }
+
+            gradientParam.StartPoint = x_i_1;
+            gradientParam.Iteration = cntr;
+            NoteGradientDescendResult(ref resultParam, gradientParam);
+
+        }
+        public static void NoteGradientDescendResult(ref SearchResult resultParam, GradientDescendParam gradientParam)
+        {
+            resultParam.Method = MethodType.gradient_descend;
+            resultParam.Iteration = gradientParam.Iteration;
+            resultParam.FunctionCalls = gradientParam.FunctionCount;
+            resultParam.Result = new DoubleVector(gradientParam.StartPoint);
+        }
+
+        public static void FindMinimumByСonjGradientDescend(ref SearchResult resultParam, FunctionND func, ref ConjGradientDescendParam conjGradientParam)
+        {
+            DoubleVector xStart = conjGradientParam.StartPoint;
+            double accuracy = conjGradientParam.Epsilon;
+            long iterations = conjGradientParam.MaxIteration;
+
+            DoubleVector x_i = new DoubleVector(xStart);
+
+            DoubleVector x_i_1 = new DoubleVector(xStart);
+
+            DoubleVector s_i = DoubleVector.Gradient(func, xStart, accuracy) * (-1.0), s_i_1;
+
+            conjGradientParam.FunctionCount = (int)(2.0 * x_i.Magnitude);
+
+            double omega;
+
+            int cntr = 0;
+
+            for (; cntr <= iterations; cntr++)
+            {
+                x_i_1 = x_i + s_i;
+
+                var fibonacciParam = new FibonacciParam(x_i, x_i_1, accuracy);
+
+                x_i_1 = FindRootByFibonacci(ref resultParam, func, ref fibonacciParam);
+
+                conjGradientParam.FunctionCount += (int)resultParam.FunctionCalls;
+
+                if ((x_i_1 - x_i).Magnitude < accuracy) break;
+
+                s_i_1 = DoubleVector.Gradient(func, x_i_1, accuracy);
+
+                conjGradientParam.FunctionCount +=  (int)(2.0 * x_i.Magnitude);
+
+                omega = Math.Pow((s_i_1).Magnitude, 2) / Math.Pow((s_i).Magnitude, 2);
+
+                s_i = s_i * omega - s_i_1;
+
+                x_i = x_i_1;
+            }
+
+            conjGradientParam.StartPoint = x_i_1;
+            conjGradientParam.Iteration = cntr;
+            NoteConjGradientDescendResult(ref resultParam, conjGradientParam);
+        }
+
+        public static void NoteConjGradientDescendResult(ref SearchResult resultParam, ConjGradientDescendParam conjGradientParam)
+        {
+            resultParam.Method = MethodType.conj_gradient_descend;
+            resultParam.Iteration = conjGradientParam.Iteration;
+            resultParam.FunctionCalls = conjGradientParam.FunctionCount;
+            resultParam.Result = new DoubleVector(conjGradientParam.StartPoint);
+        }
+
+        public static void FindMinimumByNewtoneRaphson(ref SearchResult resultParam, FunctionND func, ref NewtoneRaphsonParam nrParam)
+        {
+            DoubleVector xStart = nrParam.StartPoint;
+            double accuracy = nrParam.Epsilon;
+            long iterations = nrParam.MaxIteration;
+
+            DoubleVector x_i   = new DoubleVector(xStart);
+
+            DoubleVector x_i_1 = new DoubleVector(xStart);
+
+            int cntr = 0;
+
+            for (; cntr <= iterations; cntr++)
+            { 
+                x_i_1 = x_i - DoubleMatrix.Invert(DoubleMatrix.Hessian(func, x_i, accuracy)) * DoubleVector.Gradient(func, x_i, accuracy);
+
+                nrParam.FunctionCount +=  (int)(2.0 * x_i.Magnitude) + (int)(2.0 * x_i.Magnitude) * ((int)x_i.Magnitude + 1); //Градиент 2N, Гессиан 2N(N+1)
+                //nrParam.FunctionCount +=  (int)(2.0 * x_i.Magnitude) + (int)x_i.Magnitude * (int)x_i.Magnitude;
+                if ((x_i_1 - x_i).Magnitude < 2) break;
+
+                x_i = x_i_1;
+            }
+
+            nrParam.StartPoint = x_i_1;
+            nrParam.Iteration = cntr;
+            //nrParam.Epsilon = DoubleVector.Distance(x_i, x_i_1);
+            NoteNewtoneRaphsonResult(ref resultParam, nrParam);
+        }
+
+        public static void NoteNewtoneRaphsonResult(ref SearchResult resultParam, NewtoneRaphsonParam nrParam)
+        {
+            resultParam.Method = MethodType.newtone_raphson;
+            resultParam.Iteration = nrParam.Iteration;
+            resultParam.FunctionCalls = nrParam.FunctionCount;
+            resultParam.Result = new DoubleVector(nrParam.StartPoint);
+        }
     }
 }
